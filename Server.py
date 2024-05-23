@@ -8,19 +8,20 @@ class Server():
         self.socket = context.socket(zmq.ROUTER)
         self.socket.bind("tcp://*:5555")
         self.clients = [] 
+        self.publicKeys = []
     
     def wait_for_clients(self):
         while len(self.clients) < 2:
             print("Waiting for " + (2-len(self.clients)).__str__() + " clients to connect")
-            client_id, message = self.socket.recv_multipart()
+            client_id, publicKey1, publicKey2 = self.socket.recv_multipart()
             if not self.clients.__contains__(client_id):
+                self.publicKeys.append((publicKey1,publicKey2))
                 self.clients.append(client_id)
-                print(client_id)
+                print(client_id, publicKey1)
                 if len(self.clients) == 2:
-                    self.socket.send_multipart([client_id,  b"Connected2"])
-                else:
-                    self.socket.send_multipart([client_id,  b"Connected"])
-    
+                    self.socket.send_multipart([client_id,  b"Connected2", self.publicKeys[0][0],self.publicKeys[0][1]])
+        self.socket.send_multipart([self.clients[0],  b"Connected", self.publicKeys[1][0],self.publicKeys[1][1]])
+
     def activate(self):
         print("activated")
         while True:
