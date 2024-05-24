@@ -11,7 +11,7 @@ class Client():
         self.publicKeyGoal = None
         self.public_key, self.private_key = self.generate_keypair()
         context = zmq.Context()
-        print("Connecting to hello world server…")
+        print("Connecting to server…")
         self.socket = context.socket(zmq.DEALER)
         self.socket.setsockopt(zmq.IDENTITY, self.ip.encode('ascii'))
         self.socket.connect("tcp://localhost:5555")
@@ -26,7 +26,6 @@ class Client():
         print("Waiting on response...")
         answer = self.socket.recv_multipart()
         md = json.loads(answer[0].decode('utf-8'))
-        print(answer)
         message = np.frombuffer(answer[1], dtype=md['dtype']).reshape(md['shape'])
         message = self.decrypt(message)
         print(f"Received : {message} from {answer[2]}")
@@ -37,7 +36,6 @@ class Client():
         print("Waiting on initial response...")
         answer, publiyKeyGoal1, publiyKeyGoal2 = self.socket.recv_multipart()
         self.publicKeyGoal = (publiyKeyGoal1, publiyKeyGoal2)
-        print(answer)
         try:
             if answer==b'Connected2':
                 self.turn=1
@@ -52,7 +50,6 @@ class Client():
         ciphertext = []
         for char in message:
             ciphertext.append(pow(ord(char), int(e), int(n)))
-        print(ciphertext)
         return  np.array(ciphertext, dtype=np.int64)
 
 
@@ -62,13 +59,13 @@ class Client():
         plaintext = [chr(pow(int(char), int(d), int(n))) for char in message]
         return ''.join(plaintext)
     
-    def generate_prime(self,bits=32):
+    def generate_prime(self,bits=28):
         while True:
             p = random.getrandbits(bits)
             if self.is_prime(p):
                 return p
             
-    def generate_keypair(self,bits=32):
+    def generate_keypair(self,bits=28):
         p = self.generate_prime(bits) #prim1
         q = self.generate_prime(bits) #prim2
         n = p * q

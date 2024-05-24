@@ -17,7 +17,6 @@ class Server():
             if not self.clients.__contains__(client_id):
                 self.publicKeys.append((publicKey1,publicKey2))
                 self.clients.append(client_id)
-                print(client_id, publicKey1)
                 if len(self.clients) == 2:
                     self.socket.send_multipart([client_id,  b"Connected2", self.publicKeys[0][0],self.publicKeys[0][1]])
         self.socket.send_multipart([self.clients[0],  b"Connected", self.publicKeys[1][0],self.publicKeys[1][1]])
